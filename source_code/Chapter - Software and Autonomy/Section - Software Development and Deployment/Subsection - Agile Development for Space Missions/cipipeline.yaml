@@ -1,0 +1,40 @@
+name: flight-fw-pipeline
+
+on:
+  push:
+    branches: [ main ]  # main branch used for release candidates
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup toolchain
+        run: ./scripts/setup_toolchain.sh  # install cross-compiler
+      - name: Build flight image
+        run: make -j8 all                      # deterministic build
+      - name: Run unit tests
+        run: ctest --output-on-failure         # unit + component tests
+      - name: Static analysis
+        run: ./scripts/run_static_analysis.sh  # MISRA, clang-tidy
+
+  sign-and-publish:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Fetch build artifact
+        run: ./scripts/fetch_artifact.sh
+      - name: Sign artifact
+        run: ./scripts/sign_image.sh "$GPG_KEY" # GPG signing in secure env
+      - name: Publish to staging
+        run: ./scripts/publish_staging.sh        # pushes to ground staging
+
+  hil-validation:
+    needs: sign-and-publish
+    runs-on: [self-hosted, hil-runner]        # HIL lab runner
+    steps:
+      - name: Deploy to HIL
+        run: ./hil/deploy_and_run.sh           # deploy image and test vectors
+      - name: Collect logs and results
+        run: ./hil/collect_results.sh          # artifacts back to CI
