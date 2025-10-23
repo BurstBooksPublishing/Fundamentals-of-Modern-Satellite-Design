@@ -1,7 +1,7 @@
 # Fundamentals Of Modern Satellite Design
 
 ### Cover
-<img src="covers/Back.png" alt="Book Cover" width="300" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 3px 8px rgba(0,0,0,0.1);"/>
+<img src="covers/Front2.png" alt="Book Cover" width="300" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 3px 8px rgba(0,0,0,0.1);"/>
 
 ### Repository Structure
 - `covers/`: Book cover images
